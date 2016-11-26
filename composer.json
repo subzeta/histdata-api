@@ -8,6 +8,11 @@
       "subzeta\\HistDataApi\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "subzeta\\HistDataApi\\Tests\\": "tests/"
+    }
+  },
   "authors": [
     {
       "name": "Sergio Cadu",
@@ -22,6 +27,6 @@
   },
   "require-dev": {
     "phpunit/phpunit": "^5.2",
-    "subzeta/histdata-api": "dev-master"
+    "mockery/mockery": "^0.9.6"
   }
 }

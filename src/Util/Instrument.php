@@ -78,7 +78,7 @@ class Instrument
      */
     public function map($instrument)
     {
-        return strtolower(str_replace_array('/', '', $instrument));
+        return strtolower(str_replace('/', '', $instrument));
     }
 
     /**

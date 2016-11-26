@@ -18,7 +18,7 @@ class Client
         $file = array_pop($parts);
 
         $init_url = self::BASE_ENDPOINT.implode('/', $parts);
-        $filename = uniqid().'.zip';
+        $filename = sys_get_temp_dir().'/'.uniqid().'.zip';
 
         $ch = curl_init($init_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -86,10 +86,8 @@ class Client
 
     private function unzip(string $filename) : string
     {
-        $zipFile = public_path().'/'.$filename;
-
         $zip = new \ZipArchive();
-        if ($zip->open($zipFile)) {
+        if ($zip->open($filename)) {
             return $zip->getFromIndex(0);
         }
 
