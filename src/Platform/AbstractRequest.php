@@ -3,36 +3,39 @@
 namespace subzeta\HistDataApi\Platform;
 
 use subzeta\HistDataApi\Client;
+use subzeta\HistDataApi\Exception\HttpRuntimeException;
+use subzeta\HistDataApi\Util\Instrument;
 
 abstract class AbstractRequest
 {
     const HIST_DATA_TIMEZONE = 'EST';
 
-    /**
-     * @var Client
-     */
     private $client;
 
-    /**
-     * @param \subzeta\HistDataApi\Client $client
-     */
-    public function __construct(Client $client)
+    protected $year;
+
+    protected $month;
+
+    protected $instrument;
+
+    abstract protected function getEndpoint() : string;
+
+    abstract public function get() : array;
+
+    public function __construct(Client $client, string $year, string $month, string $instrument)
     {
         $this->client = $client;
+        $this->year = $year;
+        $this->month = str_pad($month, 2, '0', STR_PAD_LEFT);
+        $this->instrument = Instrument::map($instrument);
     }
 
-    abstract public function getEndpoint($instrument, $year, $month);
-
-    /**
-     * @return Client
-     */
-    protected function getClient()
+    protected function download() : string
     {
-        return $this->client;
-    }
-
-    public function download($year, $month, $instrument)
-    {
-        return $this->getClient()->download($this->getEndpoint($instrument, $year, $month));
+        try {
+            return $this->client->download($this->getEndpoint());
+        } catch (\Throwable $e) {
+            throw new HttpRuntimeException($e->getMessage());
+        }
     }
 }

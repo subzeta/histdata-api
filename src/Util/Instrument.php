@@ -71,21 +71,18 @@ class Instrument
     const WTI_USD = 'WTI/USD';
     const ZAR_JPY = 'ZAR/JPY';
 
-    /**
-     * @param string $instrument
-     *
-     * @return string
-     */
-    public function map($instrument)
+    public static function isValid(string $instrument) : bool
+    {
+        return in_array($instrument, self::all());
+    }
+
+    public static function map(string $instrument) : string
     {
         return strtolower(str_replace('/', '', $instrument));
     }
 
-    /**
-     * @return array
-     */
-    public function all()
+    public static function all() : array
     {
-        return (new \ReflectionClass($this))->getConstants();
+        return (new \ReflectionClass(__CLASS__))->getConstants();
     }
 }

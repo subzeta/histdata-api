@@ -53,7 +53,7 @@ class Client
         curl_setopt($ch, CURLOPT_REFERER, self::BASE_ENDPOINT.$init_url.'/'.$file);
 
         $output = curl_exec($ch);
-        $fp = fopen($filename,'wb');
+        $fp = fopen($filename, 'wb');
         if (!$fp) {
             throw new \Exception('Cannot open file for writing!' . $filename);
         }
@@ -73,7 +73,7 @@ class Client
         } else {
             $xpath = new \DOMXpath($dom_doc);
 
-            foreach($xpath->query('//form[@name="file_down"]//input') as $input) {
+            foreach ($xpath->query('//form[@name="file_down"]//input') as $input) {
                 //get name and value of input
                 $input_name = $input->getAttribute('name');
                 $input_value = $input->getAttribute('value');
@@ -91,6 +91,6 @@ class Client
             return $zip->getFromIndex(0);
         }
 
-        throw new \Exception('Couldn\'t open the zip file.');
+        throw new \Exception('Could not open the zip file.');
     }
 }

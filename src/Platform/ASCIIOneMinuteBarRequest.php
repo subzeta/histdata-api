@@ -2,37 +2,50 @@
 
 namespace subzeta\HistDataApi\Platform;
 
+use subzeta\HistDataApi\Exception\HttpRuntimeException;
+use subzeta\HistDataApi\Exception\HttpResponseException;
+
 class ASCIIOneMinuteBarRequest extends AbstractRequest
 {
     const QUOTES_ENDPOINT = 'ascii/1-minute-bar-quotes/%s/%s/%s/HISTDATA_COM_ASCII_%s_M1_%s%s.zip';
 
-    public function getEndpoint($instrument, $year, $month)
+    protected function getEndpoint() : string
     {
-        return sprintf(self::QUOTES_ENDPOINT, $instrument, $year, $month, $instrument, $year, (int)$month);
+        return sprintf(
+            self::QUOTES_ENDPOINT,
+            $this->instrument,
+            $this->year,
+            $this->month,
+            $this->instrument,
+            $this->year,
+            (int)$this->month
+        );
     }
 
-    public function fetch($year, $month, $instrument)
+    public function get() : array
     {
         $rows = [];
 
-        foreach (explode("\n", $this->download($year, $month, $instrument)) as $row) {
-            if (strlen($row) === 0) {
-                continue;
-            }
-            list($datetime, $openBid, $highBid, $lowBid, $closeBid, $volume) = str_getcsv($row, ';');
+        try {
+            foreach (explode("\n", $this->download()) as $row) {
+                if (strlen($row) === 0) {
+                    continue;
+                }
+                list($datetime, $openBid, $highBid, $lowBid, $closeBid, $volume) = str_getcsv($row, ';');
 
-            try{
                 $rows[] = [
-                    'datetime' => $datetime,
-                    'open_bid' => $openBid,
-                    'high_bid' => $highBid,
-                    'low_bid' => $lowBid,
+                    'datetime'  => $datetime,
+                    'open_bid'  => $openBid,
+                    'high_bid'  => $highBid,
+                    'low_bid'   => $lowBid,
                     'close_bid' => $closeBid,
-                    'volume' => $volume,
+                    'volume'    => $volume,
                 ];
-            } catch (\Exception $e) {
-                throw $e;
             }
+        } catch (HttpRuntimeException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            throw new HttpResponseException($e->getMessage());
         }
 
         return $rows;

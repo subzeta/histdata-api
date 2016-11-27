@@ -3,38 +3,27 @@
 namespace subzeta\HistDataApi;
 
 use Carbon\Carbon;
+use subzeta\HistDataApi\Exception\InvalidArgumentException;
+use subzeta\HistDataApi\Platform\AbstractRequest;
 use subzeta\HistDataApi\Platform\ASCIIOneMinuteBarRequest;
 use subzeta\HistDataApi\Util\Instrument;
-use subzeta\HistDataApi\Util\Platform;
 
 class HistDataApi
 {
-    public function import(string $platform, string $year, string $month, string $instrument) : array
+    public function fetchAsciiOneMinuteBar(string $year, string $month, string $instrument) : AbstractRequest
     {
-        $this->validate($platform, $year, $month, $instrument);
-
-        $instrument = (new Instrument())->map($instrument);
-        $month = str_pad($month, 2, '0', STR_PAD_LEFT);
-
-        return $this->factory($platform)->fetch($year, $month, $instrument);
+        return $this->fetch(ASCIIOneMinuteBarRequest::class, $year, $month, $instrument);
     }
 
-    private function factory($platform)
+    private function fetch(string $class, string $year, string $month, string $instrument) : AbstractRequest
     {
-        switch ($platform) {
-            case Platform::ASCII_ONE_MINUTE_BAR:
-                return new ASCIIOneMinuteBarRequest(new Client());
-        }
+        $this->validate($year, $month, $instrument);
 
-        return null;
+        return new $class(new Client(), $year, $month, $instrument);
     }
 
-    private function validate($platform, $year, $month, $instrument)
+    private function validate($year, $month, $instrument)
     {
-        if (!in_array($platform, (new Platform())->all())) {
-            throw new \InvalidArgumentException('Unexpected or null platform.');
-        }
-
         try {
             $yearAndMonth = new Carbon($year.'-'.str_pad($month, 2, '0', STR_PAD_LEFT).'-01');
 
@@ -42,13 +31,13 @@ class HistDataApi
                 throw new \Exception();
             }
         } catch (\Throwable $e) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Year and month must be greater than first of January of 2002 and lower than today'
             );
         }
 
-        if (!in_array($instrument, (new Instrument())->all())) {
-            throw new \InvalidArgumentException('Unexpected or null instrument.');
+        if (!Instrument::isValid($instrument)) {
+            throw new InvalidArgumentException('Unexpected or null instrument.');
         }
     }
 }
